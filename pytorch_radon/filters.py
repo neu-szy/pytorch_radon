@@ -14,7 +14,13 @@ def ramp_filter(size):
     image_filter[0] = 0.25
     image_filter[1::2] = -1 / (PI * image_n) ** 2
 
-    fourier_filter = torch.rfft(image_filter, 1, onesided=False)
+    # custom
+    if "rfft" not in dir(torch):
+        # the new version of torch (>1.7.0) has removed rfft function and used torch.fft.ftt to replace it.
+        _tmp = torch.fft.fft(image_filter)
+        fourier_filter = torch.stack((_tmp.real, _tmp.imag), -1)
+    else:
+        fourier_filter = torch.rfft(image_filter, 1, onesided=False)
     fourier_filter[:, 1] = fourier_filter[:, 0]
 
     return 2*fourier_filter
